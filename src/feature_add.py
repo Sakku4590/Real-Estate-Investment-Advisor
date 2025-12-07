@@ -71,7 +71,7 @@ def feature_adder(train_data: pd.DataFrame, test_data: pd.DataFrame):
         
         # Final binary label
         df['Good_Investment'] = (df['Investment_Score'] >= 2).astype(int)
-        
+    
         df.drop(["Investment_Score"], axis=1)
 
         return df
