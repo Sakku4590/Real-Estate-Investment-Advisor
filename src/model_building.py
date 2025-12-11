@@ -7,6 +7,7 @@ import logging
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from xgboost import XGBClassifier
+import yaml
 
 log_dir = 'logs'
 os.makedirs(log_dir,exist_ok=True)
@@ -28,6 +29,20 @@ file_handler.setFormatter(formatter)
 logger.addHandler(console_handler)
 logger.addHandler(file_handler)
 
+def load_params(params_path:str) ->dict:
+    try:
+        with open(params_path,'r') as file:
+            params = yaml.safe_load(file)
+        logger.debug('Parameters retrived from %s',params_path)
+        return params
+    except FileExistsError:
+        logger.error('File not Found %s',params_path)
+        raise
+    except yaml.YAMLError as e:
+        logger.error('YMAL error: %s',e)
+        raise
+    except Exception as e:
+        raise
 
 def load_data(file_path:str) -> pd.DataFrame:
     try:
@@ -44,13 +59,13 @@ def load_data(file_path:str) -> pd.DataFrame:
         logger.error('Unexpected error occurred while loading the data: %s',e)
         raise
     
-def train_model(X_train:np.ndarray,y_train:np.ndarray):
+def train_model(X_train:np.ndarray,y_train:np.ndarray,params:dict):
     try:
         if X_train.shape[0] != y_train.shape[0]:
             raise ValueError("The number of sample in X_train and y_train must be the same.")
         
-        log_model = LogisticRegression(max_iter=1000)
-        rf_model = RandomForestClassifier(n_estimators=200, random_state=42)
+        log_model = LogisticRegression(max_iter=params['max_iter'])
+        rf_model = RandomForestClassifier(n_estimators=params['n_estimators'], random_state=params['random_state'])
         xgb_model = XGBClassifier(
             n_estimators=200,
             learning_rate=0.1,
@@ -90,13 +105,14 @@ def save_model(model,file_path:str) -> None:
     
 def main():
     try:
+        params = load_params('params.yaml')['model_building']
         train_data = load_data('./data/final/train_encoded.csv')
 
         X_train = train_data.drop(["Good_Investment"], axis=1)
         y_train = train_data["Good_Investment"]
 
         # Train models ONCE
-        log_model, rf_model, xgb_model = train_model(X_train, y_train)
+        log_model, rf_model, xgb_model = train_model(X_train, y_train,params)
 
         # Save paths
         Log_model_save_path = 'models/LogisticRegression.pkl'
