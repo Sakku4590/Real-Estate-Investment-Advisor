@@ -44,7 +44,7 @@ def load_data(file_path:str) -> pd.DataFrame:
         logger.error('Unexpected error occurred while loading the data: %s',e)
         raise
     
-def train_model(X_train:np.ndarray,y_train:np.ndarray) -> Tuple[LogisticRegression,RandomForestClassifier,XGBClassifier]:
+def train_model(X_train:np.ndarray,y_train:np.ndarray):
     try:
         if X_train.shape[0] != y_train.shape[0]:
             raise ValueError("The number of sample in X_train and y_train must be the same.")
@@ -72,51 +72,6 @@ def train_model(X_train:np.ndarray,y_train:np.ndarray) -> Tuple[LogisticRegressi
     except Exception as e:
         logger.error('Error during model trainning: %s',e)
         raise
-
-# def train_model(X_train:np.ndarray,y_train:np.ndarray) -> RandomForestClassifier:
-#     try:
-#         if X_train.shape[0] != y_train.shape[0]:
-#             raise ValueError("The number of sample in X_train and y_train must be the same for randomforestclassifier.")
-        
-#         rf_model = RandomForestClassifier(n_estimators=200, random_state=42)
-#         logger.debug('Model training started with %d samples',X_train.shape[0])
-        
-#         rf_model.fit(X_train, y_train)
-        
-#         logger.debug('Model training completed')
-#         return rf_model
-    
-#     except ValueError as e:
-#         logger.error('ValueError During Randomforestclassifier model trainnig: %s',e)
-#         raise
-#     except Exception as e:
-#         logger.error('Error during model trainning: %s',e)
-#         raise
-    
-# def train_model(X_train:np.ndarray,y_train:np.ndarray) -> XGBClassifier:
-#     try:
-#         if X_train.shape[0] != y_train.shape[0]:
-#             raise ValueError("The number of sample in X_train and y_train must be the same for randomforestclassifier.")
-        
-#         xgb_model = XGBClassifier(
-#             n_estimators=200,
-#             learning_rate=0.1,
-#             max_depth=6,
-#             eval_metric='logloss'
-#         )
-#         logger.debug('Model training started with %d samples',X_train.shape[0])
-
-#         xgb_model.fit(X_train, y_train)
-        
-#         logger.debug('Xgboostmodel training completed')
-#         return xgb_model
-    
-#     except ValueError as e:
-#         logger.error('ValueError During Xgboostmodelclassifier model trainnig: %s',e)
-#         raise
-#     except Exception as e:
-#         logger.error('Error during model trainning: %s',e)
-#         raise
     
 def save_model(model,file_path:str) -> None:
     try:
@@ -136,28 +91,26 @@ def save_model(model,file_path:str) -> None:
 def main():
     try:
         train_data = load_data('./data/final/train_encoded.csv')
-        # test_data = load_data('./data/final/test_encoded.csv')
 
-        X_train = train_data.drop(["Good_Investment","Investment_Score"], axis=1)
+        X_train = train_data.drop(["Good_Investment"], axis=1)
         y_train = train_data["Good_Investment"]
-            
-        log_model = train_model(X_train,y_train)
-        rf_model = train_model(X_train,y_train)
-        xgb_model = train_model(X_train,y_train)
-            
-            
+
+        # Train models ONCE
+        log_model, rf_model, xgb_model = train_model(X_train, y_train)
+
+        # Save paths
         Log_model_save_path = 'models/LogisticRegression.pkl'
         Reg_model_save_path = 'models/RandomForestClassifier.pkl'
         Xgb_model_save_path = 'models/XgboostClassifier.pkl'
-            
-            
-        save_model(log_model,Log_model_save_path)
-        save_model(rf_model,Reg_model_save_path)
-        save_model(xgb_model,Xgb_model_save_path)
-            
+
+        # Save models separately
+        save_model(log_model, Log_model_save_path)
+        save_model(rf_model, Reg_model_save_path)
+        save_model(xgb_model, Xgb_model_save_path)
+
     except Exception as e:
-        logger.error('Faild to complete the model building process:%s',e)
-        print(f"Error:{e}")
+        logger.error('Failed to complete the model building process: %s', e)
+        print(f"Error: {e}")
         
 if __name__=='__main__':
     main()

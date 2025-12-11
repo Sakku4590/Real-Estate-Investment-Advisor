@@ -1,6 +1,11 @@
 logs
 data
 models
+dvc.yaml
+.dvcignore
+reports
+dvclive
+.dvc
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
