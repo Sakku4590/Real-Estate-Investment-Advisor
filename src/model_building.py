@@ -67,10 +67,10 @@ def train_model(X_train:np.ndarray,y_train:np.ndarray,params:dict):
         log_model = LogisticRegression(max_iter=params['max_iter'])
         rf_model = RandomForestClassifier(n_estimators=params['n_estimators'], random_state=params['random_state'])
         xgb_model = XGBClassifier(
-            n_estimators=200,
-            learning_rate=0.1,
-            max_depth=6,
-            eval_metric='logloss'
+            n_estimators=params['n_estimators'],
+            learning_rate=params['learning_rate'],
+            max_depth=params['max_depth'],
+            eval_metric=params['eval_metric']
         )
         logger.debug('Model training started with %d samples',X_train.shape[0])
         
